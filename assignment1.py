@@ -179,9 +179,20 @@ class Assignment1:
         self.bf.close()
         return
 
-    def calculate_gene_average_coverage(self):
-        print("calculate_gene_average_coverage: todo")
-        
+    def calculate_gene_average_coverage(self, coordinates, readlength):
+        self.bf = pysam.AlignmentFile(self.bamfile, 'rb')
+        subset=self.bf.fetch(reference=str(coordinates[0][2]).strip('chr'), start=int(coordinates[0][3]), end=int(coordinates[0][4]))
+        counter = 0
+        gene =  int(coordinates[0][4]) - int(coordinates[0][3])#length og gene
+        # cov=self.bf.count_coverage() #pysam function has a bug. it is documented but has never been resolved
+        for read in subset:
+            if not read.is_unmapped:
+                counter += 1
+        coverage = ((counter * readlength) / gene)
+        print("calculate_gene_average_coverage " + str(round(coverage, 3)))
+        self.bf.close()
+        return
+
     def get_number_mapped_reads(self):
         self.bf = pysam.AlignmentFile(self.bamfile, 'rb')
         count=0
@@ -242,7 +253,7 @@ class Assignment1:
         proper_paired=assignment1.get_properly_paired_reads_of_gene(outname="paired.bam", coordinates=coordinates)
         indels=assignment1.get_gene_reads_with_indels(coordinates=coordinates)
         cov=assignment1.calculate_total_average_coverage(readlength=100);#print(cov)
-        assignment1.calculate_gene_average_coverage()
+        assignment1.calculate_gene_average_coverage(coordinates=coordinates, readlength=100)
         mapped=assignment1.get_number_mapped_reads();#print(mapped)
         gene_symbol=assignment1.get_gene_symbol(symbol=self.name)#"INS");#print(gene_symbol)
         region=assignment1.get_region_of_gene(symbol=self.name);#print(region)
